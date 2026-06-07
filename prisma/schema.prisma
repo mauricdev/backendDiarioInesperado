@@ -1,0 +1,36 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Post {
+  id            Int      @id @default(autoincrement())
+  title         String
+  description   String
+  content       String   @default("")
+  imageUrl      String?
+  author        String   @default("Lady Whistledown")
+  createdAt     DateTime @default(now())
+  published     Boolean  @default(false)
+  socialSummary String?
+}
+
+model Author {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  bio       String?  // Un pequeño texto sobre cómo escribe este personaje
+  createdAt DateTime @default(now())
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String   
+  createdAt DateTime @default(now())
+}
