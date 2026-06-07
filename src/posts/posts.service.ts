@@ -44,6 +44,15 @@ export class PostsService {
     });
   }
 
+  async findAllPaginated(page: number, limit: number) {
+    const skip = (page - 1) * limit;
+    return this.prisma.post.findMany({
+      skip: skip,
+      take: limit,
+      orderBy: { id: 'desc' } // Las más nuevas primero
+    });
+  }
+
   // Función para obtener una única historia por ID
   async findOne(id: number) {
     return this.prisma.post.findUnique({
@@ -60,6 +69,7 @@ export class PostsService {
     if (updatePostDto.content !== undefined) data.content = updatePostDto.content;
     if (updatePostDto.author !== undefined) data.author = updatePostDto.author;
     if (updatePostDto.socialSummary !== undefined) data.socialSummary = updatePostDto.socialSummary;
+    if (updatePostDto.imageUrl !== undefined) data.imageUrl = updatePostDto.imageUrl;
 
     if (updatePostDto.published !== undefined) {
       data.published = typeof updatePostDto.published === 'string'
