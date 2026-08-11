@@ -84,7 +84,7 @@ export class FacebookService {
   }
 
   /**
-   * PUBLICACIÓN EN INSTAGRAM GRAPH API (Proceso obligatorio de 2 pasos)
+   * PUBLICACIÓN EN INSTAGRAM GRAPH API (Proceso de 3 pasos con Polling de status_code)
    * @param caption Texto del post / pie de foto en Instagram
    * @param imageUrl URL pública directa de la imagen de Cloudinary
    */
@@ -100,7 +100,7 @@ export class FacebookService {
     }
 
     try {
-      // PASO A: Crear el contenedor de contenido para Instagram
+      // PASO 1: Crear el contenedor de contenido para Instagram
       const createMediaUrl = `https://graph.facebook.com/v20.0/${igUserId}/media`;
       const containerPayload = {
         image_url: imageUrl,
@@ -119,7 +119,40 @@ export class FacebookService {
 
       this.logger.log(`Contenedor de Instagram creado exitosamente. Creation ID: ${creationId}`);
 
-      // PASO B: Publicar el contenedor creado
+      // PASO 2: Polling - Esperar hasta que Instagram procese la imagen (status_code === 'FINISHED')
+      let isReady = false;
+      let attempts = 0;
+      const maxAttempts = 10; // Hasta 10 intentos (máx ~30 segundos)
+      const delayMs = 3000;  // 3 segundos entre consulta
+
+      while (!isReady && attempts < maxAttempts) {
+        attempts++;
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+
+        const statusUrl = `https://graph.facebook.com/v20.0/${creationId}?fields=status_code,status&access_token=${accessToken}`;
+        const statusRes = await firstValueFrom(this.httpService.get(statusUrl));
+        const statusCode = statusRes.data?.status_code;
+
+        this.logger.log(
+          `Verificando estado del contenedor de Instagram (Intento ${attempts}/${maxAttempts}): ${statusCode}`,
+        );
+
+        if (statusCode === 'FINISHED') {
+          isReady = true;
+        } else if (statusCode === 'ERROR' || statusCode === 'EXPIRED') {
+          throw new Error(
+            `El procesamiento del contenedor en Instagram falló con estado: ${statusCode}`,
+          );
+        }
+      }
+
+      if (!isReady) {
+        throw new Error(
+          'Timeout: Instagram no completó el procesamiento de la imagen a tiempo.',
+        );
+      }
+
+      // PASO 3: Publicar el contenedor una vez listo
       const publishUrl = `https://graph.facebook.com/v20.0/${igUserId}/media_publish`;
       const publishPayload = {
         creation_id: creationId,
