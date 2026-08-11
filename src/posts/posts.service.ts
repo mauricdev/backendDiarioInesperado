@@ -38,13 +38,20 @@ export class PostsService {
       },
     });
 
-    // Publicación automática en Facebook Fanpage si la noticia está publicada
+    // Publicación automática en Redes Sociales (Facebook e Instagram) si la noticia está publicada
     if (newPost.published) {
       const postUrl = `https://eldiarioinesperado.cl/post/${newPost.id}`;
-      const message = `📰 ¡NUEVA CRÓNICA EN EL DIARIO INESPERADO!\n\n"${newPost.title}"\n\n${newPost.socialSummary || newPost.description || ''}`;
+      const caption = `📰 ¡NUEVA CRÓNICA EN EL DIARIO INESPERADO!\n\n"${newPost.title}"\n\n${newPost.socialSummary || newPost.description || ''}\n\n📖 Lee más en: ${postUrl}`;
 
-      // Llamamos a la Graph API de Facebook
-      await this.facebookService.publishToPage(message, postUrl);
+      if (newPost.imageUrl) {
+        // 1. Publicar imagen nativa de tamaño completo en Facebook Fanpage
+        await this.facebookService.publishPhotoToPage(caption, newPost.imageUrl);
+        // 2. Publicar imagen en Instagram Business (proceso en 2 pasos)
+        await this.facebookService.publishToInstagram(caption, newPost.imageUrl);
+      } else {
+        // Si la noticia no posee imagen, publicar como tarjeta de enlace en Facebook
+        await this.facebookService.publishToPage(caption, postUrl);
+      }
     }
 
     return newPost;
