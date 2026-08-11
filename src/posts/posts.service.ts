@@ -41,19 +41,19 @@ export class PostsService {
     // Publicación automática en Redes Sociales (Facebook, Feed de Instagram e Historias de Instagram)
     if (newPost.published) {
       const postUrl = `https://eldiarioinesperado.cl/post/${newPost.id}`;
-      const caption = `📰 ¡NUEVA CRÓNICA EN EL DIARIO INESPERADO!\n\n"${newPost.title}"\n\n${newPost.socialSummary || newPost.description || ''}\n\n📖 Lee más en: ${postUrl}`;
+      const caption = `"${newPost.title}"\n\n${newPost.socialSummary || newPost.description || ''}`;
 
       if (newPost.imageUrl) {
         // Ejecución con Promise.allSettled para que ninguna falla individual bloquee la API de NestJS
         const resultados = await Promise.allSettled([
-          this.facebookService.publishPhotoToPage(caption, newPost.imageUrl),
+          this.facebookService.publishPhotoToPage(`${caption}\n\n📖 Lee más en: ${postUrl}`, newPost.imageUrl),
           this.facebookService.publishToInstagram(caption, newPost.imageUrl, postUrl),
           this.facebookService.publishStoryToInstagram(newPost.imageUrl),
         ]);
         console.log('Resultados de publicación multicanal en redes sociales:', resultados);
       } else {
         // Si la noticia no posee imagen, publicar como tarjeta de enlace en Facebook
-        await this.facebookService.publishToPage(caption, postUrl);
+        await this.facebookService.publishToPage(`${caption}\n\n📖 Lee más en: ${postUrl}`, postUrl);
       }
     }
 
