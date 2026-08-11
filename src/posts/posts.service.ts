@@ -3,16 +3,18 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { PrismaService } from '../prisma.service';
 import { CloudinaryService } from '../cloudinary.service';
+import { FacebookService } from '../facebook/facebook.service';
 
 @Injectable()
 export class PostsService {
-  // Inyectamos Prisma y Cloudinary
+  // Inyectamos Prisma, Cloudinary y FacebookService
   constructor(
     private prisma: PrismaService,
-    private cloudinaryService: CloudinaryService
+    private cloudinaryService: CloudinaryService,
+    private facebookService: FacebookService,
   ) { }
 
-  // Función para guardar una nueva historia rata con subida opcional de imagen
+  // Función para guardar una nueva historia con subida opcional de imagen
   async create(createPostDto: CreatePostDto, file?: Express.Multer.File) {
     let imageUrl: string | null = createPostDto.imageUrl ?? null;
 
@@ -24,7 +26,7 @@ export class PostsService {
       ? createPostDto.published === 'true'
       : !!createPostDto.published;
 
-    return this.prisma.post.create({
+    const newPost = await this.prisma.post.create({
       data: {
         title: createPostDto.title,
         description: createPostDto.description,
@@ -35,6 +37,17 @@ export class PostsService {
         socialSummary: createPostDto.socialSummary,
       },
     });
+
+    // Publicación automática en Facebook Fanpage si la noticia está publicada
+    if (newPost.published) {
+      const postUrl = `https://eldiarioinesperado.cl/post/${newPost.id}`;
+      const message = `📰 ¡NUEVA CRÓNICA EN EL DIARIO INESPERADO!\n\n"${newPost.title}"\n\n${newPost.socialSummary || newPost.description || ''}`;
+
+      // Llamamos a la Graph API de Facebook
+      await this.facebookService.publishToPage(message, postUrl);
+    }
+
+    return newPost;
   }
 
   // Función para obtener todas las historias de la revista
