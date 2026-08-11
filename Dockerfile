@@ -5,13 +5,16 @@ FROM node:24-alpine
 WORKDIR /app
 
 # Archivos de dependencias
-COPY package*.json ./
+COPY --chown=node:node package*.json ./
 
 # Instalamos dependencias
 RUN npm install
 
 # Copiamos el resto del código
-COPY . .
+COPY --chown=node:node . .
+
+# Cambiamos al usuario sin privilegios 'node'
+USER node
 
 # Exponemos el puerto por defecto de NestJS
 EXPOSE 3000

@@ -5,11 +5,16 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './jwt.strategy';
 
+const jwtSecret = process.env.JWT_SECRET;
+if (!jwtSecret) {
+  throw new Error('CRITICAL SECURITY ERROR: JWT_SECRET environment variable is not defined!');
+}
+
 @Module({
   imports: [
     PassportModule,
     JwtModule.register({
-      secret: process.env.JWT_SECRET || 'super-secret-revista-token-key-2026',
+      secret: jwtSecret,
       signOptions: { expiresIn: '1d' },
     }),
   ],
@@ -18,3 +23,4 @@ import { JwtStrategy } from './jwt.strategy';
   exports: [AuthService],
 })
 export class AuthModule {}
+

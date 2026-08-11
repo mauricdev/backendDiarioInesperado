@@ -1,20 +1,24 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // HABILITAR CORS AQUÍ
+  // Habilitar Helmet para cabeceras HTTP defensivas
+  app.use(helmet());
+
+  // Configuración dinámica de CORS según entorno
+  const allowedOrigins = process.env.NODE_ENV === 'production'
+    ? ['https://eldiarioinesperado.cl', 'https://www.eldiarioinesperado.cl']
+    : ['https://eldiarioinesperado.cl', 'https://www.eldiarioinesperado.cl', 'http://localhost:4200'];
+
   app.enableCors({
-    origin: [
-      'https://eldiarioinesperado.cl',
-      'https://www.eldiarioinesperado.cl',
-      'http://localhost:4200' // Por si usas Angular localmente
-    ],
+    origin: allowedOrigins,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
 
   await app.listen(3000);
 }
-bootstrap();
+bootstrap();
