@@ -13,6 +13,9 @@ RUN npm install
 # Copiamos el resto del código
 COPY --chown=node:node . .
 
+# Generamos el cliente de Prisma para que TypeScript lo reconozca
+RUN npx prisma generate
+
 # Cambiamos al usuario sin privilegios 'node'
 USER node
 
