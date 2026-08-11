@@ -117,12 +117,11 @@ export class FacebookService {
         : `\n\n👉 Lee la crónica completa en el enlace de nuestra bio`;
       const finalCaption = `${caption}${ctaText}`;
 
-      // 2. Crear el contenedor de contenido para el Feed de Instagram (media_type: IMAGE)
+      // 2. Crear el contenedor para la cuadrícula (Feed) de Instagram
       const createMediaUrl = `https://graph.facebook.com/v20.0/${igUserId}/media`;
       const containerPayload = {
         image_url: imageUrl,
         caption: finalCaption,
-        media_type: 'IMAGE', // Forzar explícitamente publicación como POST en Feed (NO Story)
         access_token: accessToken,
       };
 

@@ -44,11 +44,10 @@ export class PostsService {
       const caption = `"${newPost.title}"\n\n${newPost.socialSummary || newPost.description || ''}`;
 
       if (newPost.imageUrl) {
-        // Ejecución con Promise.allSettled para que ninguna falla individual bloquee la API de NestJS
+        // Ejecución con Promise.allSettled hacia las publicaciones del Feed de Facebook e Instagram
         const resultados = await Promise.allSettled([
           this.facebookService.publishPhotoToPage(`${caption}\n\n📖 Lee más en: ${postUrl}`, newPost.imageUrl),
           this.facebookService.publishToInstagram(caption, newPost.imageUrl, postUrl),
-          this.facebookService.publishStoryToInstagram(newPost.imageUrl),
         ]);
         console.log('Resultados de publicación multicanal en redes sociales:', resultados);
       } else {
