@@ -97,8 +97,9 @@ export class FacebookService {
    * PUBLICACIÓN EN FEED DE INSTAGRAM GRAPH API (Proceso de 3 pasos con Polling de status_code)
    * @param caption Texto del post / pie de foto en Instagram
    * @param imageUrl URL pública directa de la imagen de Cloudinary
+   * @param link URL opcional de la noticia completa para la llamada a la acción (CTA)
    */
-  async publishToInstagram(caption: string, imageUrl: string): Promise<any> {
+  async publishToInstagram(caption: string, imageUrl: string, link?: string): Promise<any> {
     const igUserId = process.env.INSTAGRAM_USER_ID;
     const accessToken = process.env.FACEBOOK_PAGE_ACCESS_TOKEN;
 
@@ -110,11 +111,18 @@ export class FacebookService {
     }
 
     try {
-      // PASO 1: Crear el contenedor de contenido para el Feed de Instagram
+      // 1. Inyección de Llamado a la Acción (CTA) dinámico al final de la leyenda
+      const ctaText = link
+        ? `\n\n👉 Lee la crónica completa en el enlace de nuestra bio o visita: ${link}`
+        : `\n\n👉 Lee la crónica completa en el enlace de nuestra bio`;
+      const finalCaption = `${caption}${ctaText}`;
+
+      // 2. Crear el contenedor de contenido para el Feed de Instagram (media_type: IMAGE)
       const createMediaUrl = `https://graph.facebook.com/v20.0/${igUserId}/media`;
       const containerPayload = {
         image_url: imageUrl,
-        caption: caption,
+        caption: finalCaption,
+        media_type: 'IMAGE', // Forzar explícitamente publicación como POST en Feed (NO Story)
         access_token: accessToken,
       };
 
@@ -129,7 +137,7 @@ export class FacebookService {
 
       this.logger.log(`Contenedor de Feed de Instagram creado exitosamente. Creation ID: ${creationId}`);
 
-      // PASO 2: Polling - Esperar hasta que Instagram procese la imagen (status_code === 'FINISHED')
+      // 3. Polling - Esperar hasta que Instagram procese la imagen (status_code === 'FINISHED')
       let isReady = false;
       let attempts = 0;
       const maxAttempts = 10; // Hasta 10 intentos (máx ~30 segundos)
@@ -162,7 +170,7 @@ export class FacebookService {
         );
       }
 
-      // PASO 3: Publicar el contenedor una vez listo
+      // 4. Publicar el contenedor una vez listo
       const publishUrl = `https://graph.facebook.com/v20.0/${igUserId}/media_publish`;
       const publishPayload = {
         creation_id: creationId,

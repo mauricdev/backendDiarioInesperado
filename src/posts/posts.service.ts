@@ -47,7 +47,7 @@ export class PostsService {
         // Ejecución con Promise.allSettled para que ninguna falla individual bloquee la API de NestJS
         const resultados = await Promise.allSettled([
           this.facebookService.publishPhotoToPage(caption, newPost.imageUrl),
-          this.facebookService.publishToInstagram(caption, newPost.imageUrl),
+          this.facebookService.publishToInstagram(caption, newPost.imageUrl, postUrl),
           this.facebookService.publishStoryToInstagram(newPost.imageUrl),
         ]);
         console.log('Resultados de publicación multicanal en redes sociales:', resultados);
