@@ -83,6 +83,8 @@ export class AppController {
   <meta property="og:title" content="${this.escapeHtml(title)}">
   <meta property="og:description" content="${this.escapeHtml(description)}">
   <meta property="og:image" content="${image}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
   <meta property="og:url" content="${frontendUrl}">
 
   <!-- Twitter Cards -->
