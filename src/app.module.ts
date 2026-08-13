@@ -1,4 +1,4 @@
-import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { AppController } from './app.controller';
@@ -8,7 +8,6 @@ import { PostsModule } from './posts/posts.module';
 import { CloudinaryService } from './cloudinary.service';
 import { AuthorsModule } from './authors/authors.module';
 import { AuthModule } from './auth/auth.module';
-import { SocialBotMiddleware } from './social-bot.middleware';
 
 @Module({
   imports: [
@@ -33,10 +32,4 @@ import { SocialBotMiddleware } from './social-bot.middleware';
     },
   ],
 })
-export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(SocialBotMiddleware)
-      .forRoutes('*');
-  }
-}
+export class AppModule {}
